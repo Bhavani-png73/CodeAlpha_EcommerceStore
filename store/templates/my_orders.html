@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Orders - My E-Commerce Store</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: #222;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            margin: 0;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .order-card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .order-card h3 {
+            margin-top: 0;
+        }
+
+        .order-info {
+            margin: 10px 0;
+            color: #444;
+        }
+
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .status {
+            color: green;
+            font-weight: bold;
+        }
+
+        .empty {
+            background: white;
+            padding: 50px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .shop-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: #ff3f68;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+
+        <h1>My E-Commerce Store</h1>
+
+        <div>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'cart' %}">🛒 Cart</a>
+            <a href="{% url 'my_orders' %}">📦 My Orders</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+
+    </div>
+
+
+    <div class="container">
+
+        <h2>📦 My Orders</h2>
+
+        {% if orders %}
+
+            {% for order in orders %}
+
+                <div class="order-card">
+
+                    <h3>Order #{{ order.id }}</h3>
+
+                    <p class="order-info">
+                        <strong>Name:</strong> {{ order.name }}
+                    </p>
+
+                    <p class="order-info">
+                        <strong>Phone:</strong> {{ order.phone }}
+                    </p>
+
+                    <p class="order-info">
+                        <strong>Address:</strong> {{ order.address }}
+                    </p>
+
+                    <p class="order-info">
+                        <strong>Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}
+                    </p>
+
+                    <p class="order-info">
+                        <strong>Status:</strong>
+                        <span class="status">{{ order.status }}</span>
+                    </p>
+
+                    <h4>Products Ordered:</h4>
+
+                  {% for item in order.items.all %}
+                  <p>
+                    🛍️ {{ item.product.name }}
+                 × {{ item.quantity }}
+                 — ₹{{ item.price }}
+                </p>
+            {% endfor %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+
+                <h3>No Orders Yet 😔</h3>
+
+                <p>You haven't placed any orders yet.</p>
+
+                <a href="{% url 'home' %}" class="shop-btn">
+                    Start Shopping
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
