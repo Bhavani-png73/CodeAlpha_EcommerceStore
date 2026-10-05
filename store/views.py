@@ -175,31 +175,9 @@ def checkout(request):
             'phone': phone,
             'address': address,
         }
-
-        # Create Order in database
-        order = Order.objects.create(
-            user=request.user,
-            name=name,
-            phone=phone,
-            address=address,
-            total_amount=grand_total,
-            status='Placed'
-        )
-
-        # Create Order Items
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=item['product'],
-                quantity=item['quantity'],
-                price=item['product'].price
-            )
-
-        # Remember the order for the payment page
-        request.session['order_id'] = order.id
+        
         request.session.modified = True
-
-        # Continue to payment page
+            
         return redirect('payment')
 
     return render(request, 'checkout.html', {
@@ -267,40 +245,54 @@ def payment(request):
         return redirect('login')
 
     cart = request.session.get('cart', {})
+
     cart_items = []
 
     for product_id, quantity in cart.items():
+
         try:
             product = Product.objects.get(id=int(product_id))
 
             cart_items.append({
                 'product': product,
                 'quantity': quantity,
-                'total': product.price * quantity,
+                'total': product.price * quantity
             })
 
         except Product.DoesNotExist:
             continue
 
-    grand_total = sum(item['total'] for item in cart_items)
+    grand_total = sum(
+        item['total'] for item in cart_items
+    )
 
-    # If cart is empty
     if not cart_items:
         return redirect('cart')
 
     if request.method == 'POST':
 
-        # Get selected payment method
         payment_method = request.POST.get('payment_method')
 
-        # Get checkout details saved earlier
-        checkout_data = request.session.get('checkout_data', {})
+        if not payment_method:
+            return render(request, 'payment.html', {
+                'cart_items': cart_items,
+                'grand_total': grand_total,
+                'error': 'Please select a payment method.'
+            })
+
+        checkout_data = request.session.get(
+            'checkout_data',
+            {}
+        )
 
         name = checkout_data.get('name')
         phone = checkout_data.get('phone')
         address = checkout_data.get('address')
 
-        # Create order
+        if not name or not phone or not address:
+            return redirect('checkout')
+
+        # CREATE ONE ORDER
         order = Order.objects.create(
             user=request.user,
             name=name,
@@ -310,7 +302,7 @@ def payment(request):
             status='Placed'
         )
 
-        # Create order items and reduce stock
+        # CREATE ORDER ITEMS
         for item in cart_items:
 
             product = item['product']
@@ -323,31 +315,34 @@ def payment(request):
                 price=product.price
             )
 
+            # Reduce stock
             product.stock -= quantity
+
+            if product.stock < 0:
+                product.stock = 0
+
             product.save()
 
-        # Clear cart
+        # CLEAR CART
         request.session['cart'] = {}
 
-        # Clear checkout information
+        # CLEAR CHECKOUT DATA
         request.session['checkout_data'] = {}
 
-        # Save payment method in session
-        request.session['payment_method'] = payment_method
         request.session.modified = True
 
-        # Go to success page
+        # OPEN SUCCESS PAGE
         return render(request, 'order_success.html', {
             'name': name,
             'phone': phone,
             'address': address,
             'grand_total': grand_total,
-            'payment_method': payment_method,
+            'payment_method': payment_method
         })
 
     return render(request, 'payment.html', {
         'cart_items': cart_items,
-        'grand_total': grand_total,
+        'grand_total': grand_total
     })
 def my_orders(request):
     if not request.user.is_authenticated:

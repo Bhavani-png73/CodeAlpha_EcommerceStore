@@ -5,35 +5,38 @@
 
     <style>
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f5f5;
-            margin: 0;
         }
 
         .navbar {
             background: #222;
             color: white;
-            padding: 25px 50px;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .navbar h1 {
-            display: inline;
+            margin: 0;
         }
 
         .navbar a {
             color: white;
             text-decoration: none;
-            margin-left: 30px;
-            font-size: 18px;
+            margin-left: 25px;
         }
 
         .container {
-            width: 500px;
+            width: 90%;
+            max-width: 600px;
             margin: 50px auto;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 3px 12px #ccc;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
         }
 
         h2 {
@@ -41,107 +44,128 @@
         }
 
         .total {
-            font-size: 24px;
-            font-weight: bold;
             text-align: center;
+            font-size: 22px;
+            font-weight: bold;
             margin: 25px 0;
         }
 
-        .payment-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    width: 100%;
-    box-sizing: border-box;
-    background: #fff;
-}
+        .option {
+            display: block;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            font-size: 18px;
+        }
 
-.payment-option:hover {
-    background: #f5f5f5;
-}
+        .option:hover {
+            background: #f5f5f5;
+        }
 
-.payment-option input {
-    width: auto;
-    margin: 0;
-}
+        .option input {
+            margin-right: 12px;
+        }
 
         button {
             width: 100%;
-            padding: 14px;
-            background: #087fef;
-            color: white;
+            padding: 15px;
+            margin-top: 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: 7px;
+            background: #1683e8;
+            color: white;
             font-size: 18px;
             cursor: pointer;
-            margin-top: 20px;
         }
 
         button:hover {
-            background: #066dcc;
+            background: #0d6ec7;
         }
 
         .back {
             display: block;
             text-align: center;
-            margin-top: 20px;
-            color: #333;
+            margin-top: 25px;
+            color: #222;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="navbar">
-        <h1>My E-Commerce Store</h1>
+<div class="navbar">
 
+    <h1>My E-Commerce Store</h1>
+
+    <div>
         <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'cart' %}">Cart</a>
-        <a href="{% url 'my_orders' %}">My Orders</a>
+        <a href="{% url 'cart' %}">🛒 Cart</a>
+        <a href="{% url 'my_orders' %}">📦 My Orders</a>
         <a href="{% url 'logout' %}">Logout</a>
     </div>
 
-    <div class="container">
+</div>
 
-        <h2>Choose Payment Method</h2>
 
-        <div class="total">
-            Total Amount: ₹{{ grand_total }}
-        </div>
+<div class="container">
 
-        <form method="POST">
-            {% csrf_token %}
+    <h2>Choose Payment Method</h2>
 
-            <label class="payment-option">
-                <input type="radio" name="payment_method" value="COD" required>
-                💵 Cash on Delivery
-            </label>
-
-            <label class="payment-option">
-                <input type="radio" name="payment_method" value="UPI">
-                📱 UPI Payment
-            </label>
-
-            <label class="payment-option">
-                <input type="radio" name="payment_method" value="CARD">
-                💳 Card Payment
-            </label>
-
-            <button type="submit">
-                Confirm Payment
-            </button>
-        </form>
-
-        <a href="{% url 'checkout' %}" class="back">
-            ← Back to Checkout
-        </a>
-
+    <div class="total">
+        Total Amount: ₹{{ grand_total }}
     </div>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <!-- THIS FORM IS IMPORTANT -->
+    <form method="POST" action="{% url 'payment' %}">
+
+        {% csrf_token %}
+
+        <label class="option">
+            <input type="radio"
+                    name="payment_method"
+                    value="Cash on Delivery"
+                    required
+                    checked>
+            💵 Cash on Delivery
+        </label>
+
+        <label class="option">
+            <input type="radio"
+                   name="payment_method"
+                   value="UPI Payment">
+            📱 UPI Payment
+        </label>
+
+        <label class="option">
+            <input type="radio"
+                   name="payment_method"
+                   value="Card Payment">
+            💳 Card Payment
+        </label>
+
+        <button type="submit">
+            Confirm Payment
+        </button>
+
+    </form>
+
+    <a class="back" href="{% url 'checkout' %}">
+        ← Back to Checkout
+    </a>
+
+</div>
 
 </body>
 </html>
